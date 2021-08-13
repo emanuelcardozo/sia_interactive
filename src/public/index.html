@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        html, body, .video_container {
+            height: 100%;
+            margin: 0;
+        }
+        .video_container {
+            display: flex;
+            background-color: black;
+            justify-content: center;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="video_container">
+        <video id="videoPlayer" width="80%" controls loop>
+            <source src="/video" type="video/mp4">
+            Your browser does not support video.
+        </video>
+    </div>    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+        const videoPlayer = document.getElementById("videoPlayer");
+
+        videoPlayer.addEventListener('play', function(){
+            socket.emit("play")
+        })
+
+        videoPlayer.addEventListener('pause', function(){
+            socket.emit("pause")
+        })
+
+        socket.on('play', function(){
+            videoPlayer.play()
+        })
+
+        socket.on('pause', function(){
+            videoPlayer.pause()
+        })
+    </script>
+</body>
+</html>
