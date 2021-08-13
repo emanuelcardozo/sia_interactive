@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Sia Interactive Challenge</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
     <style>
-        html, body, .video_container {
+        html, body {
             height: 100%;
             margin: 0;
         }
@@ -17,34 +19,115 @@
             justify-content: center;
             height: 100%;
         }
+        .customBar {
+            height: 25px;
+            position: absolute;
+            display: flex;
+            bottom: 5%;
+        }
+        progress {
+            flex: 1;
+            height: 10px;
+            border-radius: 10%;
+            cursor: pointer;
+        }
+        progress[value]::-webkit-progress-value {
+            border-radius: 5px;
+            background-color: red;
+            transition: .5s;
+        }
+
+        progress[value]::-webkit-progress-bar {
+            background-color: #eee;
+            border-radius: 5px;
+            box-shadow: 0 5px 5px rgba(0, 0, 0, 0.25) inset;
+        }
+        i {
+            cursor: pointer;
+            color: red;
+            font-size: 1.5em;
+            background-color: white;
+            border-radius: 50%;
+            height: 1em;
+            margin-right: 5px;
+            margin-top: -5px;
+        }
     </style>
 </head>
 <body>
+    
     <div class="video_container">
-        <video id="videoPlayer" width="80%" controls loop>
+        <video id="videoPlayer" width="80%" loop>
             <source src="/video" type="video/mp4">
             Your browser does not support video.
         </video>
-    </div>    
+        <div class="customBar">
+            <i id="playButton" onclick="playPause()" class="fa fa-play-circle"></i>
+            <progress id="progressBar" value="0" max="100" />
+        </div>
+    </div>   
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
         const videoPlayer = document.getElementById("videoPlayer");
+        const playButton = document.getElementById("playButton");
+        const progressBar = document.getElementById("progressBar");
+        const customBar = document.querySelector(".customBar");
+        customBar.style.width = videoPlayer.offsetWidth + "px"
+
+        var isPlaying = false
+
+        function playPause() {
+            if(videoPlayer.paused) videoPlayer.play();
+            else videoPlayer.pause();
+
+            togglePlayPauseButton()
+        }
+
+        function togglePlayPauseButton(){
+            if(videoPlayer.paused){
+                playButton.classList.remove("fa-pause-circle");
+                playButton.classList.add("fa-play-circle");                
+            } else {
+                playButton.classList.remove("fa-play-circle");
+                playButton.classList.add("fa-pause-circle");
+            }
+        }
 
         videoPlayer.addEventListener('play', function(){
-            socket.emit("play")
+            socket.emit("play")         
         })
 
         videoPlayer.addEventListener('pause', function(){
-            socket.emit("pause")
+            socket.emit("pause")                        
         })
+
+        videoPlayer.addEventListener("timeupdate", function(){
+            const progress = (videoPlayer.currentTime/videoPlayer.duration)*100
+            
+            progressBar.setAttribute("value", progress)
+        });
+
+        progressBar.onclick = function(e){
+            const progressTime = (e.offsetX/ progressBar.offsetWidth) * videoPlayer.duration;
+            
+            videoPlayer.currentTime = progressTime
+            socket.emit('progressChange', progressTime)
+        }
 
         socket.on('play', function(){
             videoPlayer.play()
+            togglePlayPauseButton()
         })
 
         socket.on('pause', function(){
             videoPlayer.pause()
+            togglePlayPauseButton()
+        })
+
+        socket.on('progressChange', function(currentTime){
+            videoPlayer.currentTime = currentTime;
         })
     </script>
 </body>

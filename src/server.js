@@ -50,6 +50,11 @@ io.on('connection', function(socket) {
         console.log('Broadcasting pause event...')
         socket.broadcast.emit('pause')
     })
+
+    socket.on('progressChange', function(currentTime){
+        console.log('Broadcasting progress change event...')
+        socket.broadcast.emit('progressChange', currentTime)
+    })
 })
 
 server.listen(port, function(){
