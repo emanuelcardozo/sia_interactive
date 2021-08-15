@@ -3,7 +3,7 @@ const app = require('express')()
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const fs = require('fs');
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'))
